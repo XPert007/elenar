@@ -149,17 +149,13 @@ impl App {
     }
 
     fn vertical_bar_chart(&self) -> impl Widget {
-        let block = Block::bordered().title("Vertical Bar Chart");
-        BarChart::default()
-            .direction(Direction::Vertical)
-            .block(block)
-            .bar_width(5)
-            .bar_gap(1)
-            .data(bars())
+        let block = Block::bordered().title("CHAPTER NUMBER");
+        let content = "   420\n\n   1337\n\n   9001";
+        Paragraph::new(content).style(Color::Yellow).block(block)
     }
 
     fn horizontal_bar_chart(&self) -> impl Widget {
-        let block = Block::bordered().title("Horizontal Bar Chart");
+        let block = Block::bordered().title("TITLE");
         BarChart::default()
             .direction(Direction::Horizontal)
             .block(block)

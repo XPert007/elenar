@@ -74,7 +74,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .interact()
         .unwrap();
     println!("{}", chapters[c_selection]);
-    println!("{}", chapter_links[c_selection]);
 
     let chapter = reqwest::get(&chapter_links[c_selection])
         .await?
