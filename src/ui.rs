@@ -4,8 +4,8 @@ use ratatui::{
     DefaultTerminal,
     buffer::Buffer,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
-    layout::{Constraint, Direction, Layout, Rect, Size},
-    style::{Color, Stylize, palette::tailwind},
+    layout::{Constraint, Layout, Rect, Size},
+    style::{Stylize, palette::tailwind},
     text::{Line, Text},
     widgets::*,
 };
@@ -149,8 +149,7 @@ impl App {
     }
     fn vertical_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("CHAPTER NUMBER");
-        let standard_font =
-            FIGfont::from_file("/home/expert/projects/elenar/src/mini.flf").unwrap();
+        let standard_font = FIGfont::from_file("src/mini.flf").unwrap();
         let content = standard_font
             .convert("1078")
             .expect("FIGlet conversion failed")
@@ -177,16 +176,4 @@ impl App {
             .wrap(Wrap { trim: false })
             .block(block)
     }
-}
-
-const CHART_DATA: [(&str, u64, Color); 3] = [
-    ("Red", 2, Color::Red),
-    ("Green", 7, Color::Green),
-    ("Blue", 11, Color::Blue),
-];
-
-fn bars() -> BarGroup<'static> {
-    let data = CHART_DATA
-        .map(|(label, value, color)| Bar::default().label(label.into()).value(value).style(color));
-    BarGroup::default().bars(&data)
 }
