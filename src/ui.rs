@@ -149,12 +149,15 @@ impl App {
     }
     fn vertical_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("CHAPTER NUMBER");
-        let standard_font = FIGfont::standard().unwrap();
+        let standard_font =
+            FIGfont::from_file("/home/expert/projects/elenar/src/mini.flf").unwrap();
         let content = standard_font
             .convert("1078")
             .expect("FIGlet conversion failed")
             .to_string();
-        Paragraph::new(content).block(block)
+        Paragraph::new(content)
+            .wrap(Wrap { trim: false })
+            .block(block)
     }
     fn horizontal_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("TITLE");
