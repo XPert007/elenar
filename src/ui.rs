@@ -9,40 +9,54 @@ use ratatui::{
     text::{Line, Text},
     widgets::*,
 };
-use std::io::{self};
+use std::io::{self, Write};
 use tui_scrollview::{ScrollView, ScrollViewState};
 
-pub fn ui_run() -> Result<()> {
+pub fn run_ui(
+    novel_name: &str,
+    chapter_number: &str,
+    chapter_name: &str,
+    content: Vec<String>,
+) -> Result<()> {
     color_eyre::install()?;
     let terminal = ratatui::init();
-    let result = App::new().run(terminal);
+    let mut app = App::new(novel_name, chapter_number, chapter_name, content);
+    let result = app.run(terminal);
     ratatui::restore();
     result
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 struct App {
-    text: [String; 3],
+    novel_name: String,
+    chapter_number: String,
+    chapter_name: String,
+    text: Vec<String>,
     scroll_view_state: ScrollViewState,
     state: AppState,
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum AppState {
-    #[default]
     Running,
     Quit,
 }
 
+impl Default for AppState {
+    fn default() -> Self {
+        AppState::Running
+    }
+}
+
 impl App {
-    fn new() -> Self {
+    fn new(novel_name: &str, chapter_number: &str, chapter_name: &str, text: Vec<String>) -> Self {
         Self {
-            text: [
-                lipsum::lipsum(10_000),
-                lipsum::lipsum(10_000),
-                lipsum::lipsum(10_000),
-            ],
-            ..Default::default()
+            novel_name: novel_name.to_string(),
+            chapter_number: chapter_number.to_string(),
+            chapter_name: chapter_name.to_string(),
+            text,
+            scroll_view_state: ScrollViewState::default(),
+            state: AppState::Running,
         }
     }
 
@@ -91,9 +105,9 @@ const SCROLLVIEW_HEIGHT: u16 = 100;
 impl Widget for &mut App {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]);
-        let [title, body] = layout.areas(area);
+        let [title_area, body_area] = layout.areas(area);
 
-        self.title().render(title, buf);
+        self.title().render(title_area, buf);
         let width = if buf.area.height < SCROLLVIEW_HEIGHT {
             buf.area.width - 1
         } else {
@@ -101,7 +115,7 @@ impl Widget for &mut App {
         };
         let mut scroll_view = ScrollView::new(Size::new(width, SCROLLVIEW_HEIGHT));
         self.render_widgets_into_scrollview(scroll_view.buf_mut());
-        scroll_view.render(body, buf, &mut self.scroll_view_state)
+        scroll_view.render(body_area, buf, &mut self.scroll_view_state)
     }
 }
 
@@ -113,7 +127,7 @@ impl App {
         let keys_fg = palette.c50;
         let keys_bg = palette.c600;
         Line::from(vec![
-            "reverend insanity".into(),
+            self.novel_name.clone().into(),
             "  ↓ | ↑ | PageDown | PageUp | Home | End  "
                 .fg(keys_fg)
                 .bg(keys_bg),
@@ -126,17 +140,14 @@ impl App {
     fn render_widgets_into_scrollview(&self, buf: &mut Buffer) {
         use Constraint::*;
         let area = buf.area;
-        let [numbers, widgets] = Layout::horizontal([Length(5), Fill(1)]).areas(area);
-        let [bar_charts, text_0, text_1, text_2] =
-            Layout::vertical([Length(7), Fill(1), Fill(2), Fill(4)]).areas(widgets);
-        let [left_bar, right_bar] = Layout::horizontal([Length(20), Fill(1)]).areas(bar_charts);
+        let [numbers_area, widgets_area] = Layout::horizontal([Length(5), Fill(1)]).areas(area);
+        let [vertical_area, horizontal_area, content_area] =
+            Layout::vertical([Length(7), Length(7), Fill(1)]).areas(widgets_area);
 
-        self.line_numbers(area.height).render(numbers, buf);
-        self.vertical_bar_chart().render(left_bar, buf);
-        self.horizontal_bar_chart().render(right_bar, buf);
-        self.text(0).render(text_0, buf);
-        self.text(1).render(text_1, buf);
-        self.text(2).render(text_2, buf);
+        self.line_numbers(area.height).render(numbers_area, buf);
+        self.vertical_bar_chart().render(vertical_area, buf);
+        self.horizontal_bar_chart().render(horizontal_area, buf);
+        self.texts().render(content_area, buf);
     }
 
     fn line_numbers(&self, height: u16) -> impl Widget {
@@ -147,22 +158,12 @@ impl App {
         });
         Text::from(line_numbers).dim()
     }
+
     fn vertical_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("CHAPTER NUMBER");
-        let standard_font = FIGfont::from_file("src/mini.flf").unwrap();
-        let content = standard_font
-            .convert("1078")
-            .expect("FIGlet conversion failed")
-            .to_string();
-        Paragraph::new(content)
-            .wrap(Wrap { trim: false })
-            .block(block)
-    }
-    fn horizontal_bar_chart(&self) -> impl Widget {
-        let block = Block::bordered().title("CHAPTER NAME");
-        let standard_font = FIGfont::from_file("src/mini.flf").unwrap();
-        let content = standard_font
-            .convert("The Beginning of the End")
+        let font = FIGfont::standard().unwrap();
+        let content = font
+            .convert(&self.chapter_number)
             .expect("FIGlet conversion failed")
             .to_string();
         Paragraph::new(content)
@@ -170,9 +171,22 @@ impl App {
             .block(block)
     }
 
-    fn text(&self, index: usize) -> impl Widget {
-        let block = Block::bordered().title(format!("Text {}", index));
-        Paragraph::new(self.text[index].clone())
+    fn horizontal_bar_chart(&self) -> impl Widget {
+        let block = Block::bordered().title("CHAPTER NAME");
+        let font = FIGfont::standard().unwrap();
+        let content = font
+            .convert(&self.chapter_name)
+            .expect("FIGlet conversion failed")
+            .to_string();
+        Paragraph::new(content)
+            .wrap(Wrap { trim: false })
+            .block(block)
+    }
+
+    fn texts(&self) -> impl Widget {
+        let combined = self.text.join("\n\n");
+        let block = Block::bordered().title("CONTENT");
+        Paragraph::new(combined)
             .wrap(Wrap { trim: false })
             .block(block)
     }

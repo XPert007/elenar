@@ -90,6 +90,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     content.pop();
     content.pop();
     content.pop();
-    ui::ui_run();
+    let splitted: Vec<&str> = chapters[c_selection].split_whitespace().collect();
+
+    ui::run_ui(
+        &titles[selection],
+        splitted[1],
+        &splitted[2..].join(" "),
+        content,
+    )
+    .unwrap();
     Ok(())
 }
