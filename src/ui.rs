@@ -113,7 +113,7 @@ impl App {
         let keys_fg = palette.c50;
         let keys_bg = palette.c600;
         Line::from(vec![
-            "Tui-scrollview  ".into(),
+            "reverend insanity".into(),
             "  ↓ | ↑ | PageDown | PageUp | Home | End  "
                 .fg(keys_fg)
                 .bg(keys_bg),
@@ -160,13 +160,16 @@ impl App {
             .block(block)
     }
     fn horizontal_bar_chart(&self) -> impl Widget {
-        let block = Block::bordered().title("TITLE");
-        BarChart::default()
-            .direction(Direction::Horizontal)
+        let block = Block::bordered().title("CHAPTER NAME");
+        let standard_font =
+            FIGfont::from_file("/home/expert/projects/elenar/src/mini.flf").unwrap();
+        let content = standard_font
+            .convert("The Beginning of the End")
+            .expect("FIGlet conversion failed")
+            .to_string();
+        Paragraph::new(content)
+            .wrap(Wrap { trim: false })
             .block(block)
-            .bar_width(1)
-            .bar_gap(1)
-            .data(bars())
     }
 
     fn text(&self, index: usize) -> impl Widget {
