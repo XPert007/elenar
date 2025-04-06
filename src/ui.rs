@@ -161,8 +161,7 @@ impl App {
     }
     fn horizontal_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("CHAPTER NAME");
-        let standard_font =
-            FIGfont::from_file("/home/expert/projects/elenar/src/mini.flf").unwrap();
+        let standard_font = FIGfont::from_file("src/mini.flf").unwrap();
         let content = standard_font
             .convert("The Beginning of the End")
             .expect("FIGlet conversion failed")
