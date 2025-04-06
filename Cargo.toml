@@ -1,0 +1,11 @@
+[package]
+name = "elenar"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+reqwest = "0.12.15"
+tokio = {version = "1", features=["full"]}
+scraper = "0.23.1"
+dialoguer = {version = "0.11.0",features = ["fuzzy-select"]}
+serde_json = "1.0.140"
