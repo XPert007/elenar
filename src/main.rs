@@ -4,7 +4,9 @@ use scraper::{Html, Selector};
 use std::error::Error;
 use std::io;
 use std::io::Write;
-//remove useless shit
+use std::thread::sleep;
+use std::time::Duration;
+use tokio::time::Sleep;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     print!("Enter the name of the novel: ");
@@ -28,15 +30,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let body = reqwest::get(link).await?.text().await?;
     let doc = Html::parse_document(&body);
 
-    let selector = Selector::parse("h3.novel-title a").unwrap(); // Select <a> inside <h3>
+    let selector = Selector::parse("h3.novel-title a").unwrap();
     for heading in doc.select(&selector) {
         if let Some(link) = heading.value().attr("href") {
-            titles.push(heading.text().collect::<String>()); // Store title text
+            titles.push(heading.text().collect::<String>());
             let pre_title = heading.text().collect::<String>();
             let mut novel_id = pre_title.to_lowercase();
 
             novel_id.retain(|c| !matches!(c, '(' | ')' | ':'));
-
             novel_id = novel_id.replace(" ", "-");
             title_links.push(format!(
                 "https://novelbin.me/ajax/chapter-archive?novelId={}",
@@ -68,18 +69,30 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }
+
     let c_selection = dialoguer::FuzzySelect::new()
         .with_prompt("Results ")
         .items(&chapters)
         .interact()
         .unwrap();
     println!("{}", chapters[c_selection]);
-    println!("{}", chapter_links[c_selection]); //+=1  to mvoe to next screen
-    let chapter = reqwest::get(chapter_links[c_selection])
+    println!("{}", chapter_links[c_selection]);
+
+    let chapter = reqwest::get(&chapter_links[c_selection])
         .await?
         .text()
         .await?;
+
     let chapter_doc = Html::parse_document(&chapter);
-    let c_selector = Selector::parse("");
+    let base_selector = Selector::parse("p").unwrap();
+    let mut content = Vec::new();
+    for para in chapter_doc.select(&base_selector) {
+        let text = para.text().collect::<String>().trim().to_string();
+        content.push(text);
+    }
+    content.pop();
+    content.pop();
+    content.pop();
+
     Ok(())
 }
