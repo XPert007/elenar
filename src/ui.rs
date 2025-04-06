@@ -1,6 +1,5 @@
-use std::io::{self};
-
 use color_eyre::Result;
+use figlet_rs::FIGfont;
 use ratatui::{
     DefaultTerminal,
     buffer::Buffer,
@@ -10,6 +9,7 @@ use ratatui::{
     text::{Line, Text},
     widgets::*,
 };
+use std::io::{self};
 use tui_scrollview::{ScrollView, ScrollViewState};
 
 pub fn ui_run() -> Result<()> {
@@ -147,13 +147,15 @@ impl App {
         });
         Text::from(line_numbers).dim()
     }
-
     fn vertical_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("CHAPTER NUMBER");
-        let content = "   420\n\n   1337\n\n   9001";
-        Paragraph::new(content).style(Color::Yellow).block(block)
+        let standard_font = FIGfont::standard().unwrap();
+        let content = standard_font
+            .convert("1078")
+            .expect("FIGlet conversion failed")
+            .to_string();
+        Paragraph::new(content).block(block)
     }
-
     fn horizontal_bar_chart(&self) -> impl Widget {
         let block = Block::bordered().title("TITLE");
         BarChart::default()

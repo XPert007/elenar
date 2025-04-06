@@ -9,3 +9,8 @@ tokio = {version = "1", features=["full"]}
 scraper = "0.23.1"
 dialoguer = {version = "0.11.0",features = ["fuzzy-select"]}
 serde_json = "1.0.140"
+tui-scrollview = "0.5.1"
+color-eyre = "0.6.3"
+ratatui = "0.29.0"
+lipsum = "0.9.1"
+figlet-rs = "0.1.5"
