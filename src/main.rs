@@ -4,9 +4,7 @@ use scraper::{Html, Selector};
 use std::error::Error;
 use std::io;
 use std::io::Write;
-use std::thread::sleep;
-use std::time::Duration;
-use tokio::time::Sleep;
+mod ui;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     print!("Enter the name of the novel: ");
@@ -93,6 +91,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     content.pop();
     content.pop();
     content.pop();
-
+    ui::ui_run();
     Ok(())
 }
