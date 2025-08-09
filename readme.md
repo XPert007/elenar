@@ -30,3 +30,4 @@ cargo build --release
 The binary will be located at target/release/elenar.
 
 
+its not working as of now due to the website update, free for being fixed
